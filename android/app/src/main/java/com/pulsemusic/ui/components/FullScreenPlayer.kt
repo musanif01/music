@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.pulsemusic.data.model.Track
 import com.pulsemusic.ui.theme.artColors
+import com.pulsemusic.viewmodel.RepeatMode
 
 @Composable
 fun FullScreenPlayer(
@@ -34,6 +35,8 @@ fun FullScreenPlayer(
     onRepeat: () -> Unit,
     onFavorite: () -> Unit,
     isFavorite: Boolean,
+    isShuffle: Boolean = false,
+    repeatMode: RepeatMode = RepeatMode.OFF,
     onClose: () -> Unit,
     onQueueClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -202,7 +205,7 @@ fun FullScreenPlayer(
                     Icon(
                         Icons.Default.Shuffle,
                         contentDescription = "Shuffle",
-                        tint = MaterialTheme.colorScheme.onBackground,
+                        tint = if (isShuffle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -242,9 +245,13 @@ fun FullScreenPlayer(
 
                 IconButton(onClick = onRepeat) {
                     Icon(
-                        Icons.Default.Repeat,
+                        when (repeatMode) {
+                            RepeatMode.OFF -> Icons.Default.Repeat
+                            RepeatMode.ALL -> Icons.Default.Repeat
+                            RepeatMode.ONE -> Icons.Default.RepeatOne
+                        },
                         contentDescription = "Repeat",
-                        tint = MaterialTheme.colorScheme.onBackground,
+                        tint = if (repeatMode != RepeatMode.OFF) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(24.dp)
                     )
                 }

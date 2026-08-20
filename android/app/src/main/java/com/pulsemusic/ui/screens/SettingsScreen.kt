@@ -2,11 +2,16 @@ package com.pulsemusic.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     region: String,
@@ -15,9 +20,31 @@ fun SettingsScreen(
     onSafeSearchChange: (String) -> Unit,
     onSave: () -> Unit,
     isAuthenticated: Boolean,
-    onInitOAuth: () -> Unit
+    onInitOAuth: () -> Unit,
+    onBack: () -> Unit = {}
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+            Text(
+                "Settings",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
 
         Column(

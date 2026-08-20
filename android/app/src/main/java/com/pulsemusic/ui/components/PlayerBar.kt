@@ -23,9 +23,11 @@ import com.pulsemusic.ui.theme.artColors
 fun PlayerBar(
     track: Track?,
     isPlaying: Boolean,
+    isFavorite: Boolean,
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
+    onFavorite: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -93,12 +95,12 @@ fun PlayerBar(
                     }
                 }
 
-                if (track != null && !track.thumbnail.isNullOrEmpty()) {
-                    IconButton(onClick = { }) {
+                if (track != null) {
+                    IconButton(onClick = onFavorite) {
                         Icon(
-                            Icons.Default.Favorite,
+                            if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Favorite",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

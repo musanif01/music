@@ -29,7 +29,7 @@ import com.pulsemusic.ui.theme.artColors
 @Composable
 fun HomeScreen(
     searchResults: TypedSearchResults,
-    favoriteIds: List<String,
+    favoriteIds: List<String>,
     recentTracks: List<Track>,
     allTracks: List<Track>,
     onPlay: (Track) -> Unit,
@@ -39,7 +39,8 @@ fun HomeScreen(
     onPlayShuffle: () -> Unit,
     onArtistClick: (SearchResult) -> Unit = {},
     onAlbumClick: (SearchResult) -> Unit = {},
-    onTrackClick: (Track) -> Unit = {}
+    onTrackClick: (Track) -> Unit = {},
+    onSettingsClick: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -62,7 +63,7 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 )
 
-                IconButton(onClick = { }) {
+                IconButton(onClick = onSettingsClick) {
                     Icon(
                         Icons.Default.Notifications,
                         contentDescription = "Notifications",
