@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7f8fb" />
+    <title>Pulse Music</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Pulse Music</p>
+          <h1 id="viewTitle">Home</h1>
+        </div>
+        <button class="icon-button" id="installButton" type="button" title="Install app" aria-label="Install app" hidden>⇩</button>
+      </header>
+
+      <main class="screen" id="homeView" data-view="home">
+        <section class="search-panel" aria-label="Search">
+          <form class="search-form" id="searchForm">
+            <label class="field-label" for="searchInput">Search YouTube Music</label>
+            <div class="search-row">
+              <input id="searchInput" name="query" type="search" placeholder="Song, artist, album" autocomplete="off" />
+              <button class="icon-button strong" id="searchButton" type="submit" title="Search" aria-label="Search">⌕</button>
+            </div>
+          </form>
+          <div class="source-actions">
+            <button class="text-button" id="openYtMusicButton" type="button">Open in YouTube Music</button>
+            <button class="text-button ghost" data-tab-target="settings" type="button">API settings</button>
+          </div>
+          <div class="search-history" id="searchHistory" hidden>
+            <p class="label">Recent searches</p>
+          </div>
+        </section>
+
+        <section class="hero-player" aria-label="Now playing">
+          <div class="cover-art cover-art-large" id="nowCover"></div>
+          <div class="now-copy">
+            <p class="label">Now playing</p>
+            <h2 id="nowTitle">Nothing playing</h2>
+            <p id="nowArtist">Pick a track to start.</p>
+            <div class="meter" aria-hidden="true"><span id="progressBar"></span></div>
+          </div>
+        </section>
+
+        <section class="toolbar-grid" aria-label="Quick actions">
+          <button class="quick-action" id="shuffleButton" type="button">
+            <span>⤨</span>
+            <strong>Shuffle</strong>
+          </button>
+          <button class="quick-action" data-tab-target="playlists" type="button">
+            <span>＋</span>
+            <strong>Playlist</strong>
+          </button>
+          <button class="quick-action" data-tab-target="downloads" type="button">
+            <span>⇣</span>
+            <strong>Offline</strong>
+          </button>
+          <button class="quick-action" data-tab-target="queue" type="button">
+            <span>≡</span>
+            <strong>Queue</strong>
+          </button>
+        </section>
+
+        <section class="section-head">
+          <div>
+            <p class="label">Results</p>
+            <h2>Music search</h2>
+          </div>
+          <span class="status-pill" id="searchStatus">Sample mode</span>
+        </section>
+        <div class="track-list" id="searchResults"></div>
+      </main>
+
+      <main class="screen" id="libraryView" data-view="library" hidden>
+        <section class="section-head">
+          <div>
+            <p class="label">Library</p>
+            <h2>Saved music</h2>
+          </div>
+          <button class="text-button ghost" id="clearRecentButton" type="button">Clear recent</button>
+        </section>
+        <div class="segmented" role="tablist" aria-label="Library filter">
+          <button class="segment active" data-library-filter="all" type="button">All</button>
+          <button class="segment" data-library-filter="favorites" type="button">Favorites</button>
+          <button class="segment" data-library-filter="recent" type="button">Recent</button>
+        </div>
+        <div class="track-list" id="libraryList"></div>
+      </main>
+
+      <main class="screen" id="playlistsView" data-view="playlists" hidden>
+        <section class="playlist-create" aria-label="Create playlist">
+          <form id="playlistForm">
+            <label class="field-label" for="playlistName">New playlist</label>
+            <div class="search-row">
+              <input id="playlistName" type="text" maxlength="40" placeholder="Late night drive" />
+              <button class="icon-button strong" type="submit" title="Create playlist" aria-label="Create playlist">＋</button>
+            </div>
+          </form>
+        </section>
+        <dialog id="renamePlaylistDialog">
+          <form method="dialog" class="dialog-card">
+            <div>
+              <p class="label">Rename playlist</p>
+              <h2 id="renamePlaylistTitle">Playlist</h2>
+            </div>
+            <input id="renamePlaylistInput" type="text" maxlength="40" placeholder="New name" />
+            <div class="dialog-actions">
+              <button class="text-button ghost" value="cancel" type="button">Cancel</button>
+              <button class="text-button" id="confirmRenameButton" type="button">Rename</button>
+            </div>
+          </form>
+        </dialog>
+        <div class="playlist-layout">
+          <aside class="playlist-list" id="playlistList" aria-label="Playlists"></aside>
+          <section class="playlist-detail" aria-label="Playlist detail">
+            <div class="section-head tight">
+              <div>
+                <p class="label">Playlist</p>
+                <h2 id="selectedPlaylistTitle">Select a playlist</h2>
+              </div>
+              <div class="section-actions">
+                <button class="icon-button strong" id="playPlaylistButton" type="button" title="Play playlist" aria-label="Play playlist">▶</button>
+                <button class="icon-button" id="exportPlaylistButton" type="button" title="Export playlist" aria-label="Export playlist">⇩</button>
+                <button class="icon-button" id="renamePlaylistButton" type="button" title="Rename playlist" aria-label="Rename playlist">✎</button>
+                <button class="icon-button" id="deletePlaylistButton" type="button" title="Delete playlist" aria-label="Delete playlist">×</button>
+              </div>
+            </div>
+            <div class="track-list" id="playlistTracks"></div>
+          </section>
+        </div>
+      </main>
+
+      <main class="screen" id="downloadsView" data-view="downloads" hidden>
+        <section class="upload-panel">
+          <div>
+            <p class="label">Offline</p>
+            <h2>Device audio</h2>
+            <p>Import user-owned audio files for offline playback inside this app.</p>
+          </div>
+          <label class="file-button">
+            <input id="fileInput" type="file" accept="audio/*" multiple />
+            Add audio files
+          </label>
+        </section>
+        <div class="track-list" id="downloadList"></div>
+      </main>
+
+      <main class="screen" id="queueView" data-view="queue" hidden>
+        <section class="section-head">
+          <div>
+            <p class="label">Up next</p>
+            <h2>Queue</h2>
+          </div>
+          <button class="text-button ghost" id="clearQueueButton" type="button">Clear</button>
+        </section>
+        <div class="track-list" id="queueList"></div>
+      </main>
+
+      <main class="screen" id="settingsView" data-view="settings" hidden>
+        <section class="settings-panel">
+          <div>
+            <p class="label">Source</p>
+            <h2>YouTube setup</h2>
+          </div>
+          <label class="field-label" for="apiKeyInput">YouTube Data API key</label>
+          <input id="apiKeyInput" type="password" placeholder="Paste API key" autocomplete="off" />
+          <div class="settings-row">
+            <label>
+              Region
+              <input id="regionInput" type="text" maxlength="2" placeholder="US" />
+            </label>
+            <label>
+              Safe search
+              <select id="safeSearchInput">
+                <option value="moderate">Moderate</option>
+                <option value="strict">Strict</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+          </div>
+          <button class="text-button" id="saveSettingsButton" type="button">Save settings</button>
+          <div class="settings-row">
+            <label class="toggle-label">
+              <span>Dark mode</span>
+              <input id="darkModeToggle" type="checkbox" />
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
+          <p class="fine-print">YouTube tracks stream through official embeds. This app does not download or cache YouTube audio or video.</p>
+        </section>
+      </main>
+
+      <section class="player-dock" aria-label="Player">
+        <div class="dock-main">
+          <div class="cover-art cover-art-small" id="dockCover"></div>
+          <div class="dock-copy">
+            <strong id="dockTitle">No track selected</strong>
+            <span id="dockArtist">Queue is empty</span>
+          </div>
+        </div>
+        <div class="dock-controls">
+          <button class="icon-button" id="prevButton" type="button" title="Previous" aria-label="Previous">‹</button>
+          <button class="icon-button strong" id="playPauseButton" type="button" title="Play or pause" aria-label="Play or pause">▶</button>
+          <button class="icon-button" id="nextButton" type="button" title="Next" aria-label="Next">›</button>
+        </div>
+      </section>
+
+      <section class="embed-panel" id="embedPanel" hidden>
+        <div class="embed-head">
+          <span>YouTube player</span>
+          <button class="icon-button" id="closeEmbedButton" type="button" title="Hide player" aria-label="Hide player">×</button>
+        </div>
+        <iframe id="youtubeFrame" title="YouTube player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </section>
+
+      <audio id="audioElement" preload="metadata"></audio>
+
+      <nav class="bottom-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-tab-target="home" type="button"><span>⌂</span>Home</button>
+        <button class="nav-item" data-tab-target="library" type="button"><span>♡</span>Library</button>
+        <button class="nav-item" data-tab-target="playlists" type="button"><span>▦</span>Lists</button>
+        <button class="nav-item" data-tab-target="downloads" type="button"><span>⇣</span>Offline</button>
+        <button class="nav-item" data-tab-target="settings" type="button"><span>⚙</span>Settings</button>
+      </nav>
+    </div>
+
+    <dialog id="playlistDialog">
+      <form method="dialog" class="dialog-card">
+        <div>
+          <p class="label">Add to playlist</p>
+          <h2 id="dialogTrackTitle">Track</h2>
+        </div>
+        <div id="dialogPlaylistOptions" class="dialog-options"></div>
+        <button class="text-button" value="cancel">Done</button>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js" defer></script>
+  </body>
+</html>

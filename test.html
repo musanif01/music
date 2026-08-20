@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pulse Music Tests</title>
+    <style>
+      body {
+        font-family: monospace;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      h1 { margin-bottom: 20px; }
+      .test-pass { color: #22863a; padding: 4px 0; }
+      .test-fail { color: #d73a49; padding: 4px 0; }
+      .test-summary { 
+        padding: 10px; 
+        margin-bottom: 20px; 
+        background: #fff;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      #runTests {
+        padding: 10px 20px;
+        background: #117d73;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+      #runTests:hover { background: #0d5e57; }
+    </style>
+  </head>
+  <body>
+    <h1>Pulse Music Tests</h1>
+    <button id="runTests">Run Tests</button>
+    <div id="testResults"></div>
+    
+    <script src="app.js"></script>
+    <script src="tests.js"></script>
+    <script>
+      document.getElementById("runTests").addEventListener("click", runTests);
+    </script>
+  </body>
+</html>
