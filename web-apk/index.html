@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseMusic · Android Test Build</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 20% 20%, #1b1b2f, #0f0f1a 60%);
+      color: #e8e8f0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+    }
+    .card {
+      max-width: 480px;
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 36px 28px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    p.sub { color: #a0a0c0; margin: 0 0 24px; font-size: 15px; line-height: 1.5; }
+    .version {
+      display: inline-block;
+      background: rgba(139,92,246,0.18);
+      color: #c4b5fd;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    a.download {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      color: #fff;
+      font-weight: 700;
+      font-size: 17px;
+      padding: 15px 20px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+      transition: opacity .15s ease;
+    }
+    a.download:hover { opacity: .9; }
+    .meta { font-size: 12px; color: #8a8aa8; margin-bottom: 24px; text-align: center; }
+    h2 { font-size: 15px; margin: 0 0 10px; }
+    ol {
+      margin: 0 0 0 18px;
+      padding: 0;
+      font-size: 14px;
+      color: #c8c8e0;
+      line-height: 1.8;
+    }
+    .note {
+      font-size: 12px;
+      color: #7a7a99;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 22px;
+      padding-top: 16px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">PM</div>
+    <h1>PulseMusic</h1>
+    <p class="sub">Ad-free music player for Android — test build.</p>
+    <div class="version">Debug build · v1.0.0</div>
+
+    <a class="download" href="./PulseMusic.apk" download>⬇ Download PulseMusic.apk</a>
+    <div class="meta">~46 MB · arm64-v8a / x86_64</div>
+
+    <h2>Install on your Android phone</h2>
+    <ol>
+      <li>Tap the download button above (may appear in Downloads).</li>
+      <li>Open the downloaded <code>PulseMusic.apk</code> file.</li>
+      <li>If blocked, allow <strong>Install unknown apps</strong> for your browser or file manager.</li>
+      <li>Press <strong>Install</strong>, then <strong>Open</strong>.</li>
+    </ol>
+
+    <p class="note">This is an unsigned-rebuild debug APK for testing only, not from the Play Store.</p>
+  </div>
+</body>
+</html>
