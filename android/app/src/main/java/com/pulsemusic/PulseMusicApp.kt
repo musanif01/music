@@ -24,9 +24,11 @@ class PulseMusicApp : Application() {
 
     private fun initializePython() {
         try {
-            System.loadLibrary("python")
-        } catch (e: UnsatisfiedLinkError) {
-            android.util.Log.w("PulseMusicApp", "Python library not yet loaded (first run)", e)
+            if (!com.chaquo.python.Python.isStarted()) {
+                com.chaquo.python.Python.start(com.chaquo.python.android.AndroidPlatform(this))
+            }
+        } catch (e: Throwable) {
+            android.util.Log.w("PulseMusicApp", "Python init failed", e)
         }
     }
 

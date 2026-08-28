@@ -23,7 +23,7 @@ class YTMusicBridge(private val context: Context) {
             val python = com.chaquo.python.Python.getInstance()
             val module = python.getModule("ytmusic")
             pyClass = module.callAttr("PulseYTMusic")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e("YTMusicBridge", "Failed to initialize Python module", e)
         }
     }
