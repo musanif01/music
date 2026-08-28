@@ -47,7 +47,12 @@ class YTMusicBridge(private val context: Context) {
                 val err = gson.fromJson(json, JsonObject::class.java)
                 throw IllegalStateException("ytmusicapi: ${err?.get("error")?.asString ?: "unknown"}")
             }
-            parseSearchResults(json)
+            val parsed = parseSearchResults(json)
+            if (parsed.isEmpty()) {
+                val head = if (json == null || json.isBlank()) "empty" else json.take(120) + "…"
+                throw IllegalStateException("Search returned no results (raw: $head)")
+            }
+            parsed
         } catch (e: Exception) {
             Log.e("YTMusicBridge", "Search failed", e)
             throw e
