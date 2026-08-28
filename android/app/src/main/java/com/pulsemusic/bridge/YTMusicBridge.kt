@@ -203,11 +203,12 @@ class YTMusicBridge(private val context: Context) {
             youtubeId = videoId,
             browseId = browseId,
             title = extractNested(map, "title") ?: extractNested(map, "name"),
-            artist = extractNested(map, "artist"),
-            album = extractNested(map, "album"),
+            artist = extractArtists(map),
+            album = extractAlbumName(map),
             duration = extractNested(map, "duration"),
             durationMs = try {
                 (map["duration_seconds"] as? Number)?.toLong()?.times(1000)
+                    ?: (extractNested(map, "duration")?.let { parseDurationMs(it) })
             } catch (e: Exception) { null },
             thumbnail = extractThumbnail(map),
             url = if (videoId != null) "https://music.youtube.com/watch?v=$videoId" else null,
@@ -222,7 +223,7 @@ class YTMusicBridge(private val context: Context) {
             id = browseId?.let { "album-$it" },
             browseId = browseId,
             title = extractNested(map, "title") ?: extractNested(map, "name"),
-            artist = extractNested(map, "artist"),
+            artist = extractArtists(map),
             thumbnail = extractThumbnail(map),
             url = browseId?.let { "https://music.youtube.com/browse/$it" },
             type = "album",
@@ -235,13 +236,42 @@ class YTMusicBridge(private val context: Context) {
         return SearchResult(
             id = browseId?.let { "artist-$it" },
             browseId = browseId,
-            title = extractNested(map, "title") ?: extractNested(map, "name"),
-            artist = extractNested(map, "artist"),
+            title = extractNested(map, "artist") ?: extractNested(map, "title") ?: extractNested(map, "name"),
+            artist = extractArtists(map),
             thumbnail = extractThumbnail(map),
             url = browseId?.let { "https://music.youtube.com/channel/$it" },
             type = "artist",
             resultType = "artist"
         )
+    }
+
+    private fun extractArtists(map: Map<String, Any?>): String? {
+        val artists = map["artists"] as? List<*>
+        if (artists != null && artists.isNotEmpty()) {
+            return artists.joinToString(", ") { item ->
+                (item as? Map<*, *>)?.get("name") as? String ?: ""
+            }
+        }
+        return extractNested(map, "artist")
+    }
+
+    private fun extractAlbumName(map: Map<String, Any?>): String? {
+        val album = map["album"] as? Map<*, *>
+        if (album != null) {
+            return album["name"] as? String
+        }
+        return extractNested(map, "album")
+    }
+
+    private fun parseDurationMs(duration: String): Long? {
+        return try {
+            val parts = duration.split(":").map { it.toLong() }
+            when (parts.size) {
+                2 -> parts[0] * 60_000 + parts[1] * 1000
+                3 -> parts[0] * 3_600_000 + parts[1] * 60_000 + parts[2] * 1000
+                else -> null
+            }
+        } catch (e: Exception) { null }
     }
 
     private fun extractNested(map: Map<String, Any?>, key: String): String? {
