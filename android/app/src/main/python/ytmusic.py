@@ -16,9 +16,76 @@ class PulseYTMusic:
             if search_filter:
                 kwargs["filter"] = search_filter
             results = self.yt.search(query, **kwargs)
-            return json.dumps(results, default=str, ensure_ascii=False)
+            return json.dumps(self._normalize_search(results), default=str, ensure_ascii=False)
         except Exception as e:
             return json.dumps({"error": str(e)})
+
+    def _normalize_search(self, results):
+        normalized = []
+        if not isinstance(results, list):
+            return normalized
+        for r in results:
+            if not isinstance(r, dict):
+                continue
+            rtype = r.get("resultType") or r.get("type")
+            if rtype not in ("song", "video", "album", "artist"):
+                continue
+            video_id = r.get("videoId")
+            browse_id = r.get("browseId")
+            artists = r.get("artists") or []
+            if isinstance(artists, list) and artists:
+                artist = ", ".join(a.get("name") for a in artists if isinstance(a, dict) and a.get("name"))
+            else:
+                artist = r.get("artist")
+            album_name = None
+            album_field = r.get("album")
+            if isinstance(album_field, dict):
+                album_name = album_field.get("name")
+            elif isinstance(album_field, str):
+                album_name = album_field
+            thumb = self._first_thumb(r.get("thumbnails"))
+            dur = r.get("duration")
+            dur_secs = r.get("duration_seconds")
+            if dur_secs:
+                duration_ms = int(dur_secs) * 1000
+            elif dur and ":" in dur:
+                parts = dur.split(":")
+                try:
+                    parts = [int(p) for p in parts]
+                    if len(parts) == 2:
+                        duration_ms = parts[0] * 60000 + parts[1] * 1000
+                    elif len(parts) == 3:
+                        duration_ms = parts[0] * 3600000 + parts[1] * 60000 + parts[2] * 1000
+                    else:
+                        duration_ms = None
+                except Exception:
+                    duration_ms = None
+            else:
+                duration_ms = None
+            title = r.get("title") or r.get("name")
+            normalized.append({
+                "id": ("yt-" + video_id) if video_id else None,
+                "youtubeId": video_id,
+                "browseId": browse_id,
+                "title": title,
+                "artist": artist,
+                "album": album_name,
+                "duration": dur,
+                "durationMs": duration_ms,
+                "thumbnail": thumb,
+                "url": ("https://music.youtube.com/watch?v=" + video_id) if video_id else None,
+                "resultType": rtype,
+                "type": rtype,
+            })
+        return normalized
+
+    def _first_thumb(self, thumbs):
+        if isinstance(thumbs, list) and thumbs:
+            last = thumbs[-1]
+            if isinstance(last, dict):
+                return last.get("url")
+        return None
+
 
     def search_suggestions(self, query):
         import json

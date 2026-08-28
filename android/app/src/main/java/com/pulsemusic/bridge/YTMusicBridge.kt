@@ -174,140 +174,15 @@ class YTMusicBridge(private val context: Context) {
     }
 
     private fun parseSearchResults(json: String): List<SearchResult> {
-        try {
-            val arr = gson.fromJson(json, Array::class.java) ?: return emptyList()
-            val results = mutableListOf<SearchResult>()
-            for (item in arr) {
-                val map = gson.fromJson(gson.toJson(item), Map::class.java) as? Map<String, Any?> ?: continue
-                val resultType = map["resultType"] as? String ?: continue
-                if (resultType == "song" || resultType == "video") {
-                    results.add(parseSongOrVideo(map, resultType))
-                } else if (resultType == "album") {
-                    results.add(parseAlbum(map))
-                } else if (resultType == "artist") {
-                    results.add(parseArtist(map))
-                }
-            }
-            return results
+        val type = object : com.google.gson.reflect.TypeToken<List<SearchResult>>() {}.type
+        return try {
+            gson.fromJson<List<SearchResult>>(json, type) ?: emptyList()
         } catch (e: Exception) {
             Log.e("YTMusicBridge", "Parse search results failed", e)
-            return emptyList()
+            emptyList()
         }
     }
 
-    private fun parseSongOrVideo(map: Map<String, Any?>, type: String): SearchResult {
-        val videoId = extractNested(map, "videoId")
-        val browseId = extractNested(map, "browseId")
-        return SearchResult(
-            id = if (videoId != null) "yt-$videoId" else null,
-            youtubeId = videoId,
-            browseId = browseId,
-            title = extractNested(map, "title") ?: extractNested(map, "name"),
-            artist = extractArtists(map),
-            album = extractAlbumName(map),
-            duration = extractNested(map, "duration"),
-            durationMs = try {
-                (map["duration_seconds"] as? Number)?.toLong()?.times(1000)
-                    ?: (extractNested(map, "duration")?.let { parseDurationMs(it) })
-            } catch (e: Exception) { null },
-            thumbnail = extractThumbnail(map),
-            url = if (videoId != null) "https://music.youtube.com/watch?v=$videoId" else null,
-            type = type,
-            resultType = type
-        )
-    }
-
-    private fun parseAlbum(map: Map<String, Any?>): SearchResult {
-        val browseId = extractNested(map, "browseId")
-        return SearchResult(
-            id = browseId?.let { "album-$it" },
-            browseId = browseId,
-            title = extractNested(map, "title") ?: extractNested(map, "name"),
-            artist = extractArtists(map),
-            thumbnail = extractThumbnail(map),
-            url = browseId?.let { "https://music.youtube.com/browse/$it" },
-            type = "album",
-            resultType = "album"
-        )
-    }
-
-    private fun parseArtist(map: Map<String, Any?>): SearchResult {
-        val browseId = extractNested(map, "browseId")
-        return SearchResult(
-            id = browseId?.let { "artist-$it" },
-            browseId = browseId,
-            title = extractNested(map, "artist") ?: extractNested(map, "title") ?: extractNested(map, "name"),
-            artist = extractArtists(map),
-            thumbnail = extractThumbnail(map),
-            url = browseId?.let { "https://music.youtube.com/channel/$it" },
-            type = "artist",
-            resultType = "artist"
-        )
-    }
-
-    private fun extractArtists(map: Map<String, Any?>): String? {
-        val artists = map["artists"] as? List<*>
-        if (artists != null && artists.isNotEmpty()) {
-            return artists.joinToString(", ") { item ->
-                (item as? Map<*, *>)?.get("name") as? String ?: ""
-            }
-        }
-        return extractNested(map, "artist")
-    }
-
-    private fun extractAlbumName(map: Map<String, Any?>): String? {
-        val album = map["album"] as? Map<*, *>
-        if (album != null) {
-            return album["name"] as? String
-        }
-        return extractNested(map, "album")
-    }
-
-    private fun parseDurationMs(duration: String): Long? {
-        return try {
-            val parts = duration.split(":").map { it.toLong() }
-            when (parts.size) {
-                2 -> parts[0] * 60_000 + parts[1] * 1000
-                3 -> parts[0] * 3_600_000 + parts[1] * 60_000 + parts[2] * 1000
-                else -> null
-            }
-        } catch (e: Exception) { null }
-    }
-
-    private fun extractNested(map: Map<String, Any?>, key: String): String? {
-        val direct = map[key] as? String
-        if (direct != null) return direct
-
-        val nested = map[key] as? Map<*, *>
-        if (nested != null) {
-            val runs = nested["runs"] as? List<*>
-            if (runs != null) {
-                return runs.joinToString("") {
-                    (it as? Map<*, *>)?.get("text") as? String ?: ""
-                }
-            }
-            return nested["text"] as? String
-        }
-        return null
-    }
-
-    private fun extractThumbnail(map: Map<String, Any?>): String? {
-        val thumbs = map["thumbnails"] as? List<*>
-        if (thumbs != null && thumbs.isNotEmpty()) {
-            val last = thumbs.last() as? Map<*, *>
-            return last?.get("url") as? String
-        }
-        val nested = map["thumbnail"] as? Map<*, *>
-        if (nested != null) {
-            val thumbs2 = nested["thumbnails"] as? List<*>
-            if (thumbs2 != null && thumbs2.isNotEmpty()) {
-                val last = thumbs2.last() as? Map<*, *>
-                return last?.get("url") as? String
-            }
-            return nested["url"] as? String
-        }
-        return null
-    }
 
     fun parseArtistDetail(json: JsonObject): ArtistDetail {
         val header = json.getAsJsonObject("header")
