@@ -87,7 +87,7 @@ fun TrackItem(
             ) {
                 if (track.source == "youtube") {
                     Icon(
-                        Icons.Default.YouTube,
+                        Icons.Default.PlayCircle,
                         contentDescription = "YouTube",
                         modifier = Modifier.size(12.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant

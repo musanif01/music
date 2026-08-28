@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 
@@ -24,6 +25,7 @@ fun YouTubePlayerView(
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    val density = LocalDensity.current
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -65,10 +67,9 @@ fun YouTubePlayerView(
                     WebView(context).apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
-                            250.dp.toPx().toInt()
+                            with(density) { 250.dp.toPx() }.toInt()
                         )
                         settings.javaScriptEnabled = true
-                        settings.allowFullscreenContent = true
                         settings.mediaPlaybackRequiresUserGesture = false
                         settings.domStorageEnabled = true
 

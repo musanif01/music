@@ -296,12 +296,12 @@ class YTMusicBridge(private val context: Context) {
                 val videoId = flexItem.getAsJsonArray("playlistItemData")
                     ?.get(0)?.asJsonObject?.get("videoId")?.asString
                 val titleRuns = flexItem.getAsJsonArray("flexColumns")
-                    ?.get(0)?.asJsonObject?.getAsJsonArray("musicResponsiveListItemFlexColumnRenderer")
+                    ?.get(0)?.asJsonObject?.getAsJsonObject("musicResponsiveListItemFlexColumnRenderer")
                     ?.getAsJsonObject("text")?.getAsJsonArray("runs")
                 val title = titleRuns?.joinToString("") { it.asJsonObject.get("text").asString } ?: "Unknown"
 
                 val artistRuns = flexItem.getAsJsonArray("flexColumns")
-                    ?.get(1)?.asJsonObject?.getAsJsonArray("musicResponsiveListItemFlexColumnRenderer")
+                    ?.get(1)?.asJsonObject?.getAsJsonObject("musicResponsiveListItemFlexColumnRenderer")
                     ?.getAsJsonObject("text")?.getAsJsonArray("runs")
                 val artist = artistRuns?.joinToString("") { it.asJsonObject.get("text").asString } ?: name
 
@@ -356,12 +356,12 @@ class YTMusicBridge(private val context: Context) {
                 val playlistItemData = flexItem.getAsJsonObject("playlistItemData") ?: continue
                 val videoId = playlistItemData.get("videoId")?.asString
                 val titleRuns = flexItem.getAsJsonArray("flexColumns")
-                    ?.get(0)?.asJsonObject?.getAsJsonArray("musicResponsiveListItemFlexColumnRenderer")
+                    ?.get(0)?.asJsonObject?.getAsJsonObject("musicResponsiveListItemFlexColumnRenderer")
                     ?.getAsJsonObject("text")?.getAsJsonArray("runs")
                 val trackTitle = titleRuns?.joinToString("") { it.asJsonObject.get("text").asString } ?: "Unknown"
 
                 val artistRuns = flexItem.getAsJsonArray("flexColumns")
-                    ?.get(1)?.asJsonObject?.getAsJsonArray("musicResponsiveListItemFlexColumnRenderer")
+                    ?.get(1)?.asJsonObject?.getAsJsonObject("musicResponsiveListItemFlexColumnRenderer")
                     ?.getAsJsonObject("text")?.getAsJsonArray("runs")
                 val trackArtist = artistRuns?.joinToString("") { it.asJsonObject.get("text").asString } ?: artist ?: "Unknown"
 
@@ -408,7 +408,7 @@ class YTMusicBridge(private val context: Context) {
             }
         } catch (e: Exception) {
             Log.e("YTMusicBridge", "Parse watch playlist failed", e)
-            emptyList()
+            return emptyList()
         }
     }
 }

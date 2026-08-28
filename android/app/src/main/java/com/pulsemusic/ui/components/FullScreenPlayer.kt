@@ -180,7 +180,7 @@ fun FullScreenPlayer(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = formatDuration((progress * (track.durationMs ?: 0L) / 1000L)),
+                        text = formatDuration(((track.durationMs ?: 0L) * progress.toDouble()).toLong() / 1000L),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                     )

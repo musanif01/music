@@ -118,7 +118,7 @@ fun PlayerBar(
             }
 
             LinearProgressIndicator(
-                progress = { 0f },
+                progress = 0f,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(2.dp),
