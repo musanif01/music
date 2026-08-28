@@ -178,7 +178,7 @@ fun PulseMusicMain(vm: MainViewModel) {
                     }
 
                     NavigationBar {
-                        Screen.bottomNavItems.forEach { screen ->
+                        Screen.getBottomNavItems().forEach { screen ->
                             NavigationBarItem(
                                 selected = currentScreen == screen,
                                 onClick = { vm.navigateTo(screen) },

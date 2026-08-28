@@ -19,6 +19,6 @@ sealed class Screen(
     data object Settings : Screen("settings", "Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
 
     companion object {
-        val bottomNavItems = listOf(Home, Search, Library, Offline)
+        fun getBottomNavItems() = listOf(Home, Search, Library, Offline)
     }
 }
