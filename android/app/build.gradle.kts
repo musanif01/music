@@ -60,6 +60,7 @@ android {
 
 chaquopy {
     defaultConfig {
+        version = "3.10"
         buildPython("/usr/bin/python3")
         pip {
             install("ytmusicapi")
