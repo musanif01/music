@@ -128,6 +128,7 @@ fun PulseMusicMain(vm: MainViewModel) {
     val typedSearchResults by vm.typedSearchResults.collectAsState()
     val isSearching by vm.isSearching.collectAsState()
     val searchSuggestions by vm.searchSuggestions.collectAsState()
+    val searchError by vm.searchError.collectAsState()
     val playingTrackId by vm.playingTrackId.collectAsState()
     val isPlaying by vm.isPlaying.collectAsState()
     val currentYouTubeVideoId by vm.currentYouTubeVideoId.collectAsState()
@@ -271,6 +272,7 @@ fun PulseMusicMain(vm: MainViewModel) {
                         searchResults = typedSearchResults,
                         searchSuggestions = searchSuggestions,
                         isSearching = isSearching,
+                        searchError = searchError,
                         query = searchQuery,
                         onQueryChange = { vm.updateSearchQuery(it) },
                         onSearch = { vm.search(it) },

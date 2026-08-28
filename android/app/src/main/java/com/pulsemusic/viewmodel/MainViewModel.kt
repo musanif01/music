@@ -53,6 +53,9 @@ class MainViewModel(
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching
 
+    private val _searchError = MutableStateFlow<String?>(null)
+    val searchError: StateFlow<String?> = _searchError
+
     private val _searchSuggestions = MutableStateFlow<List<String>>(emptyList())
     val searchSuggestions: StateFlow<List<String>> = _searchSuggestions
 
@@ -193,6 +196,7 @@ class MainViewModel(
     fun search(query: String) {
         if (query.isBlank()) return
         _isSearching.value = true
+        _searchError.value = null
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             try {
@@ -207,6 +211,8 @@ class MainViewModel(
                 )
             } catch (e: Exception) {
                 android.util.Log.e("MainViewModel", "Search failed", e)
+                _searchError.value = e.message ?: "Search failed"
+                _typedSearchResults.value = TypedSearchResults()
             } finally {
                 _isSearching.value = false
             }

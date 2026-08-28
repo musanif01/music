@@ -17,6 +17,7 @@ class YTMusicBridge(private val context: Context) {
 
     private val gson = Gson()
     private var pyClass: Any? = null
+    private var initError: String? = null
 
     init {
         try {
@@ -24,12 +25,15 @@ class YTMusicBridge(private val context: Context) {
             val module = python.getModule("ytmusic")
             pyClass = module.callAttr("PulseYTMusic")
         } catch (e: Throwable) {
+            initError = "Python module init failed: ${e.message}"
             Log.e("YTMusicBridge", "Failed to initialize Python module", e)
         }
     }
 
     suspend fun search(query: String, filter: String? = null): List<SearchResult> = withContext(Dispatchers.IO) {
-        if (pyClass == null) return@withContext emptyList()
+        if (pyClass == null) {
+            throw IllegalStateException(initError ?: "Python not initialized")
+        }
 
         try {
             val py = pyClass as com.chaquo.python.PyObject
@@ -39,10 +43,14 @@ class YTMusicBridge(private val context: Context) {
                 py.callAttr("search", query)
             }
             val json = result.toString()
+            if (json.contains("\"error\"")) {
+                val err = gson.fromJson(json, JsonObject::class.java)
+                throw IllegalStateException("ytmusicapi: ${err?.get("error")?.asString ?: "unknown"}")
+            }
             parseSearchResults(json)
         } catch (e: Exception) {
             Log.e("YTMusicBridge", "Search failed", e)
-            emptyList()
+            throw e
         }
     }
 
