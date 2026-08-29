@@ -106,6 +106,7 @@ class PulseYTMusic:
     def get_stream_url(self, video_id):
         import json
         video_id = str(video_id)
+        reasons = []
         try:
             url = "https://www.youtube.com/watch?v=" + video_id
             from pytubefix import YouTube
@@ -122,37 +123,43 @@ class PulseYTMusic:
                             "mime": getattr(stream, 'mime_type', None),
                             "abr": getattr(stream, 'abr', None),
                         })
+                    reasons.append("pytubefix-no-stream")
                 except Exception as e:
-                    continue
-        except Exception:
-            pass
+                    reasons.append("pytubefix(%s):%s" % (kwargs.get("client") or "default", str(e)[:120]))
+        except Exception as e:
+            reasons.append("pytubefix-import:" + str(e)[:120])
 
         try:
-            stream_url, mime = self._inner_tube_stream(video_id)
+            stream_url, mime, detail = self._inner_tube_stream(video_id)
             if stream_url:
                 return json.dumps({
                     "videoId": video_id,
                     "streamUrl": stream_url,
                     "mime": mime,
                 })
-        except Exception:
-            pass
+            reasons.append(detail)
+        except Exception as e:
+            reasons.append("innertube:" + str(e)[:120])
 
-        return json.dumps({"error": "could not extract stream url"})
+        return json.dumps({"error": " | ".join(reasons) or "could not extract stream url"})
 
     def _inner_tube_stream(self, video_id):
         import requests
         endpoint = "https://www.youtube.com/youtubei/v1/player"
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36",
-        }
+        reasons = []
         clients = [
-            ("ANDROID", "19.09.37"),
-            ("WEB", "2.20240801.01.00"),
-            ("IOS", "19.09.3"),
+            ("TVHTML5_SIMPLY_EMBEDDED_PLAYER", "2.0", "Mozilla/5.0 (X11; Linux)"),
+            ("TVHTML5", "7.20240801.08.00", "Mozilla/5.0 (PlayStation; PlayStation 5/2.40)"),
+            ("WEB_EMBEDDED_PLAYER", "1.20240801.00.00", "Mozilla/5.0"),
+            ("ANDROID", "19.09.37", "Mozilla/5.0 (Linux; Android 10)"),
+            ("IOS", "19.09.3", "com.google.ios.youtube/19.09.3"),
+            ("WEB", "2.20240801.01.00", "Mozilla/5.0"),
         ]
-        for name, ver in clients:
+        for name, ver, ua in clients:
+            headers = {
+                "Content-Type": "application/json",
+                "User-Agent": ua,
+            }
             payload = {
                 "videoId": video_id,
                 "contentCheckOk": True,
@@ -164,19 +171,32 @@ class PulseYTMusic:
             try:
                 r = requests.post(endpoint, json=payload, headers=headers, timeout=30)
                 data = r.json()
+                ps = (data.get("playabilityStatus") or {})
+                status = ps.get("status")
+                reason = (ps.get("reason")
+                          or ps.get("errorScreen", {}).get("playerErrorMessageRenderer", {}).get("reason")
+                          or ps.get("errorScreen", {}).get("playerLegacyDesktopYpcTrailerRenderer", {}).get("details"))
                 sd = data.get("streamingData") or {}
                 formats = (sd.get("adaptiveFormats") or []) + (sd.get("formats") or [])
                 audio = [f for f in formats if (f.get("mimeType") or "").startswith("audio/")]
-                if not audio:
-                    continue
-                best = sorted(audio, key=lambda f: f.get("bitrate") or 0, reverse=True)[0]
-                su = best.get("url")
-                if not su:
-                    continue
-                return su, best.get("mimeType")
-            except Exception:
-                continue
-        return None, None
+                if status == "OK" and audio:
+                    best = sorted(audio, key=lambda f: f.get("bitrate") or 0, reverse=True)[0]
+                    su = best.get("url")
+                    if su:
+                        return su, best.get("mimeType"), None
+                if str(reason) and "YouTube" not in str(reason):
+                    reasons.append("%s:%s" % (name, reason))
+                elif r.status_code != 200:
+                    reasons.append("%s:HTTP%d" % (name, r.status_code))
+                elif audio:
+                    reasons.append("%s:no-url" % name)
+                else:
+                    reasons.append("%s:%s" % (name, status or "no-audio"))
+            except Exception as e:
+                reasons.append("%s:%s" % (name, str(e)[:80]))
+        return None, None, " | ".join(reasons) or "all-clients-failed"
+
+
 
 
     def get_lyrics(self, video_id):
