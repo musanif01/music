@@ -15,6 +15,7 @@ class PulseMusicApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        CrashHandler.install()
 
         database = AppDatabase.getInstance(this)
         repository = MusicRepository(database)

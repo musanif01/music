@@ -11,6 +11,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -157,6 +160,16 @@ fun PulseMusicMain(vm: MainViewModel) {
     val libraryTracks by vm.libraryTracks.collectAsState()
     val localTracks by vm.localTracks.collectAsState()
     val currentTrack by vm.currentTrack.collectAsState()
+
+    var crashLogState by remember { mutableStateOf<String?>(null) }
+    var crashChecked by remember { mutableStateOf(false) }
+    LaunchedEffect(crashChecked) {
+        if (!crashChecked) {
+            val log = CrashHandler.readCrashLog()
+            if (log.isNotBlank()) crashLogState = log
+            crashChecked = true
+        }
+    }
 
     val selectedPlaylist = playlists.find { it.id == selectedPlaylistId }
 
@@ -344,6 +357,31 @@ fun PulseMusicMain(vm: MainViewModel) {
                 }
             }
         }
+    }
+
+    if (crashLogState != null) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Last crash (v${AppBuild.VERSION})") },
+            text = {
+                Column {
+                    Text(
+                        text = crashLogState!!,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 360.dp)
+                            .verticalScroll(rememberScrollState())
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    CrashHandler.clearCrashLog()
+                    crashLogState = null
+                }) { Text("Dismiss") }
+            }
+        )
     }
 
     if (showPlaylistDialog && dialogTrackId != null) {
