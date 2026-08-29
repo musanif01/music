@@ -56,6 +56,9 @@ class MainViewModel(
     private val _searchError = MutableStateFlow<String?>(null)
     val searchError: StateFlow<String?> = _searchError
 
+    private val _searchDiagnostic = MutableStateFlow<String>("idle")
+    val searchDiagnostic: StateFlow<String> = _searchDiagnostic
+
     private val _searchSuggestions = MutableStateFlow<List<String>>(emptyList())
     val searchSuggestions: StateFlow<List<String>> = _searchSuggestions
 
@@ -201,6 +204,7 @@ class MainViewModel(
         searchJob = viewModelScope.launch {
             try {
                 val results = ytMusic.search(query)
+                _searchDiagnostic.value = ytMusic.lastDiagnostic
                 val songs = results.filter { it.resultType == "song" || it.resultType == "video" }
                     .map { ytMusic.searchResultToTrack(it) }
                 val albums = results.filter { it.resultType == "album" }
@@ -211,6 +215,7 @@ class MainViewModel(
                 )
             } catch (e: Exception) {
                 android.util.Log.e("MainViewModel", "Search failed", e)
+                _searchDiagnostic.value = ytMusic.lastDiagnostic
                 _searchError.value = e.message ?: "Search failed"
                 _typedSearchResults.value = TypedSearchResults()
             } finally {

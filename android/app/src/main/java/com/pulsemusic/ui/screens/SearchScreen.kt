@@ -40,6 +40,7 @@ fun SearchScreen(
     searchSuggestions: List<String>,
     isSearching: Boolean,
     searchError: String? = null,
+    searchDiagnostic: String = "idle",
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
@@ -109,6 +110,13 @@ fun SearchScreen(
                 text = "Search error tag: ${searchError ?: "none"}",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            Text(
+                text = "Diag: $searchDiagnostic",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }

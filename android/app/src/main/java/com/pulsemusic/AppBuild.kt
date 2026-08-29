@@ -1,5 +1,5 @@
 package com.pulsemusic
 
 object AppBuild {
-    const val VERSION = "v7"
+    const val VERSION = "v8"
 }

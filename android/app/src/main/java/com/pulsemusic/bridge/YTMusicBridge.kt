@@ -30,8 +30,12 @@ class YTMusicBridge(private val context: Context) {
         }
     }
 
+    @Volatile var lastDiagnostic: String = "idle"
+        private set
+
     suspend fun search(query: String, filter: String? = null): List<SearchResult> = withContext(Dispatchers.IO) {
         if (pyClass == null) {
+            lastDiagnostic = "python-not-init"
             throw IllegalStateException(initError ?: "Python not initialized")
         }
 
@@ -43,11 +47,14 @@ class YTMusicBridge(private val context: Context) {
                 py.callAttr("search", query)
             }
             val json = result.toString()
-            if (json.contains("\"error\"")) {
+            lastDiagnostic = "raw:${json?.take(80)?.replace('\n', ' ')}"
+            if (json != null && json.contains("\"error\"")) {
                 val err = gson.fromJson(json, JsonObject::class.java)
+                lastDiagnostic = "py-error:${err?.get("error")?.asString}"
                 throw IllegalStateException("ytmusicapi: ${err?.get("error")?.asString ?: "unknown"}")
             }
             val parsed = parseSearchResults(json)
+            lastDiagnostic = "parsed=${parsed.size} raw:${json?.take(60)?.replace('\n', ' ')}"
             if (parsed.isEmpty()) {
                 val head = if (json == null || json.isBlank()) "empty" else json.take(120) + "…"
                 throw IllegalStateException("Search returned no results (raw: $head)")
