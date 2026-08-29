@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -131,7 +132,7 @@ fun SearchScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
-                items(searchResults.songs.take(5), key = { it.id }) { track ->
+                itemsIndexed(searchResults.songs.take(5), key = { index, track -> "song-$index-${track.id}" }) { index, track ->
                     TrackItem(
                         track = track,
                         isFavorite = false,
@@ -153,7 +154,7 @@ fun SearchScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
-                items(searchResults.artists.take(5), key = { it.id ?: it.title ?: "" }) { artist ->
+                itemsIndexed(searchResults.artists.take(5), key = { index, artist -> "artist-$index-${artist.id ?: artist.title}" }) { index, artist ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -211,7 +212,7 @@ fun SearchScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
-                items(searchResults.albums.take(5), key = { it.id ?: it.title ?: "" }) { album ->
+                itemsIndexed(searchResults.albums.take(5), key = { index, album -> "album-$index-${album.id ?: album.title}" }) { index, album ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
