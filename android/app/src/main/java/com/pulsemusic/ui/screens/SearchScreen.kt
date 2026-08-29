@@ -97,6 +97,20 @@ fun SearchScreen(
             )
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "PulseMusic build ${com.pulsemusic.AppBuild.VERSION}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            Text(
+                text = "Search error tag: ${searchError ?: "none"}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
 
         if (hasQuery && hasResults) {
