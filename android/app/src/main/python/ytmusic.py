@@ -103,6 +103,82 @@ class PulseYTMusic:
         except Exception as e:
             return json.dumps({"error": str(e)})
 
+    def get_stream_url(self, video_id):
+        import json
+        video_id = str(video_id)
+        try:
+            url = "https://www.youtube.com/watch?v=" + video_id
+            from pytubefix import YouTube
+            for kwargs in ({"client": "ANDROID"}, {"client": "WEB"}, {}):
+                try:
+                    yt = YouTube(url, **kwargs)
+                    stream = yt.streams.filter(only_audio=True).first()
+                    if stream is None:
+                        stream = yt.streams.first()
+                    if stream is not None and stream.url:
+                        return json.dumps({
+                            "videoId": video_id,
+                            "streamUrl": stream.url,
+                            "mime": getattr(stream, 'mime_type', None),
+                            "abr": getattr(stream, 'abr', None),
+                        })
+                except Exception as e:
+                    continue
+        except Exception:
+            pass
+
+        try:
+            stream_url, mime = self._inner_tube_stream(video_id)
+            if stream_url:
+                return json.dumps({
+                    "videoId": video_id,
+                    "streamUrl": stream_url,
+                    "mime": mime,
+                })
+        except Exception:
+            pass
+
+        return json.dumps({"error": "could not extract stream url"})
+
+    def _inner_tube_stream(self, video_id):
+        import requests
+        endpoint = "https://www.youtube.com/youtubei/v1/player"
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36",
+        }
+        clients = [
+            ("ANDROID", "19.09.37"),
+            ("WEB", "2.20240801.01.00"),
+            ("IOS", "19.09.3"),
+        ]
+        for name, ver in clients:
+            payload = {
+                "videoId": video_id,
+                "contentCheckOk": True,
+                "racyCheckOk": True,
+                "context": {
+                    "client": {"clientName": name, "clientVersion": ver}
+                },
+            }
+            try:
+                r = requests.post(endpoint, json=payload, headers=headers, timeout=30)
+                data = r.json()
+                sd = data.get("streamingData") or {}
+                formats = (sd.get("adaptiveFormats") or []) + (sd.get("formats") or [])
+                audio = [f for f in formats if (f.get("mimeType") or "").startswith("audio/")]
+                if not audio:
+                    continue
+                best = sorted(audio, key=lambda f: f.get("bitrate") or 0, reverse=True)[0]
+                su = best.get("url")
+                if not su:
+                    continue
+                return su, best.get("mimeType")
+            except Exception:
+                continue
+        return None, None
+
+
     def get_lyrics(self, video_id):
         import json
         try:

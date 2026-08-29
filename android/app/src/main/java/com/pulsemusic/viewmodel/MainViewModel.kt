@@ -74,6 +74,12 @@ class MainViewModel(
     private val _progress = MutableStateFlow(0f)
     val progress: StateFlow<Float> = _progress
 
+    private val _isPreparingStream = MutableStateFlow(false)
+    val isPreparingStream: StateFlow<Boolean> = _isPreparingStream
+
+    private val _playbackError = MutableStateFlow<String?>(null)
+    val playbackError: StateFlow<String?> = _playbackError
+
     private val _isShuffle = MutableStateFlow(false)
     val isShuffle: StateFlow<Boolean> = _isShuffle
 
@@ -245,8 +251,7 @@ class MainViewModel(
                 controller.play()
             }
         } else if (track.source == "youtube" && track.youtubeId != null) {
-            _currentYouTubeVideoId.value = track.youtubeId
-            _showYouTubePlayer.value = true
+            playYoutubeStream(track)
         }
     }
 
@@ -268,8 +273,44 @@ class MainViewModel(
                 controller.play()
             }
         } else if (track.source == "youtube" && track.youtubeId != null) {
-            _currentYouTubeVideoId.value = track.youtubeId
-            _showYouTubePlayer.value = true
+            playYoutubeStream(track)
+        }
+    }
+
+    private fun playYoutubeStream(track: Track) {
+        val videoId = track.youtubeId ?: return
+        _showYouTubePlayer.value = false
+        _isPreparingStream.value = true
+        _playbackError.value = null
+        viewModelScope.launch {
+            val streamUrl = ytMusic.getStreamUrl(videoId) { err ->
+                _playbackError.value = "stream error: $err"
+            }
+            _isPreparingStream.value = false
+            if (streamUrl == null) {
+                _currentYouTubeVideoId.value = videoId
+                _showYouTubePlayer.value = true
+                return@launch
+            }
+            val controller = mediaController
+            if (controller != null) {
+                val mediaItem = MediaItem.Builder()
+                    .setMediaId(track.id)
+                    .setUri(streamUrl)
+                    .setMediaMetadata(
+                        androidx.media3.common.MediaMetadata.Builder()
+                            .setTitle(track.title)
+                            .setArtist(track.artist)
+                            .apply { track.thumbnail?.let { setArtworkUri(android.net.Uri.parse(it)) } }
+                            .build()
+                    )
+                    .build()
+                controller.setMediaItem(mediaItem)
+                controller.prepare()
+                controller.play()
+            } else {
+                _playbackError.value = "player not ready"
+            }
         }
     }
 

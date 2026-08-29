@@ -64,6 +64,7 @@ chaquopy {
         buildPython("/usr/bin/python3")
         pip {
             install("ytmusicapi")
+            install("pytubefix==8.13.1")
         }
     }
 }

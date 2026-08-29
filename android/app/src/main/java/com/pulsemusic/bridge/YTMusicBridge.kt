@@ -92,6 +92,32 @@ class YTMusicBridge(private val context: Context) {
         }
     }
 
+    suspend fun getStreamUrl(videoId: String, onError: (String) -> Unit = {}): String? = withContext(Dispatchers.IO) {
+        if (pyClass == null) {
+            onError("python-not-init")
+            return@withContext null
+        }
+        try {
+            val py = pyClass as com.chaquo.python.PyObject
+            val result = py.callAttr("get_stream_url", videoId)
+            val json = result.toString()
+            val obj = try { gson.fromJson(json, JsonObject::class.java) } catch (e: Exception) { null }
+            if (obj != null && obj.has("error")) {
+                onError(obj.get("error").asString)
+                return@withContext null
+            }
+            if (obj != null && obj.has("streamUrl")) {
+                return@withContext obj.get("streamUrl").asString
+            }
+            onError("no-stream-field:${json?.take(80)}")
+            null
+        } catch (e: Exception) {
+            Log.e("YTMusicBridge", "Get stream URL failed", e)
+            onError(e.message ?: "stream-extract-error")
+            null
+        }
+    }
+
     suspend fun getWatchPlaylist(videoId: String, limit: Int = 25): List<WatchPlaylistItem> = withContext(Dispatchers.IO) {
         if (pyClass == null) return@withContext emptyList()
         try {

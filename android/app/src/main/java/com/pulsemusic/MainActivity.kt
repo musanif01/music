@@ -13,10 +13,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -160,6 +162,8 @@ fun PulseMusicMain(vm: MainViewModel) {
     val libraryTracks by vm.libraryTracks.collectAsState()
     val localTracks by vm.localTracks.collectAsState()
     val currentTrack by vm.currentTrack.collectAsState()
+    val isPreparingStream by vm.isPreparingStream.collectAsState()
+    val playbackError by vm.playbackError.collectAsState()
 
     var crashLogState by remember { mutableStateOf<String?>(null) }
     var crashChecked by remember { mutableStateOf(false) }
@@ -212,6 +216,12 @@ fun PulseMusicMain(vm: MainViewModel) {
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
+            if (isPreparingStream) {
+                val preparingText = "Preparing stream…"
+                ToastOverlay(text = preparingText)
+            } else if (playbackError != null) {
+                ToastOverlay(text = "Playback: $playbackError")
+            }
             when {
                 showFullScreenPlayer && currentTrack != null -> {
                     FullScreenPlayer(
@@ -405,6 +415,26 @@ fun PulseMusicMain(vm: MainViewModel) {
                     Text("Done")
                 }
             }
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.ToastOverlay(text: String) {
+    Surface(
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        color = MaterialTheme.colorScheme.inverseSurface,
+        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+        shape = RoundedCornerShape(8.dp),
+        shadowElevation = 4.dp
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         )
     }
 }
